@@ -15,6 +15,7 @@ use FOS\OAuthServerBundle\Event\OAuthEvent;
 use FOS\OAuthServerBundle\Form\Handler\AuthorizeFormHandler;
 use FOS\OAuthServerBundle\Model\ClientInterface;
 use OAuth2\OAuth2ServerException;
+use FOS\OAuthServerBundle\Exception\OAuth2ServerException as OAuth2ServerExceptionCustom;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -124,6 +125,9 @@ class AuthorizeController implements ContainerAwareInterface
                 ->get('fos_oauth_server.server')
                 ->finishClientAuthorization($formHandler->isAccepted(), $user, $request, $formHandler->getScope());
         } catch (OAuth2ServerException $e) {
+            $errorData = json_decode($e->getResponseBody());
+            $e = new OAuth2ServerExceptionCustom($e->getHttpCode(), $errorData->error ,$errorData->error_description);
+
             return $e->getHttpResponse();
         }
     }

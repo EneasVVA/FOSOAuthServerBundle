@@ -14,6 +14,7 @@ namespace FOS\OAuthServerBundle\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use OAuth2\OAuth2;
 use OAuth2\OAuth2ServerException;
+use FOS\OAuthServerBundle\Exception\OAuth2ServerException as OAuth2ServerExceptionCustom;
 use Symfony\Component\HttpFoundation\Response;
 
 class TokenController
@@ -41,6 +42,9 @@ class TokenController
         try {
             return $this->server->grantAccessToken($request);
         } catch (OAuth2ServerException $e) {
+            $errorData = json_decode($e->getResponseBody());
+            $e = new OAuth2ServerExceptionCustom($e->getHttpCode(), $errorData->error ,$errorData->error_description);
+
             return $e->getHttpResponse();
         }
     }
